@@ -137,6 +137,7 @@ Checklist; must be objectively verifiable.
 - [ ] **Side effects** — Only **declared** `side_effect_channels` used; **limits** and idempotency respected; no silent extra sends/calls.
 - [ ] **Commit & metadata** — If the task includes VCS/PR work: **message**, **body**, **scope of commit(s)**, and **forbidden** lines/trailers (per org policy) are **explicitly** OK.
 - [ ] **Contract cross-check** — `success_criteria` items **proven** with the evidence type named in this section—not assumed from executor narrative.
+- [ ] **Violation closure gate** — If **any** violation was **detected** (boundary breach, forbidden action, unauthorized mutation, false-completion risk, supervisor overreach, repeated drift after correction, etc.), **linked** structured violation record(s) per `templates/violation-record.md` are **filed** and referenced **before** this task/review is closed or accepted. **Do not** close without them.
 
 **If the same class of miss recurs,** **tighten** the next contract, checklist, or automation—do not normalize informal acceptance.
 

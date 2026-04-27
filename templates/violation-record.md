@@ -2,41 +2,37 @@
 
 **Standard version:** 1.0 (see `docs/standard.md`)
 
-Use this when a limit was crossed, success was claimed without meeting criteria, or an executor attempted an action outside the contract. Purpose: **audit** and **policy improvement**, not blame theater.
+Use this when a limit was crossed, success was claimed without meeting criteria, or an executor attempted an action outside the contract. **Normative:** if a violation is **detected**, the record **must** be **filed** and **linked** before task/review **closure** (see `docs/standard.md` §8). Purpose: **audit** and **policy improvement**, not blame theater.
 
 ---
 
-## Record metadata
+## Enforcement fields (required for filing)
 
 | Field | Value |
 |-------|--------|
-| `violation_id` | `VIO-________________` |
-| `task_id` | |
-| `execution_id` | |
+| `violation_id` | `VIO-________________` (stable id for this record) |
+| `task_id` | Contract `task_id` this run belongs to |
+| `execution_id` | Bound identity id when applicable; `n/a` only if violation is purely supervisor/control-plane with no executor |
 | `detected_at` | ISO 8601 |
-| `detected_by` | human id, automaton, or verifier name |
-| `severity` | e.g. `attempted_unauthorized` / `overreach` / `false_completion` / `data_exposure_risk` |
+| `detected_by` | Human id, automaton, or verifier name |
+| **Rule violated** | Quote or cite contract clause, policy id, or standard section (e.g. §1.1 bridge, `allowed_paths`) |
+| **Evidence** | Facts only: diff ids, commit hashes, log excerpts, message ids, command transcripts (redact secrets) |
+| **Containment** | Immediate action: revoke, block, revert, freeze branch—what was **done** |
+| **Prevention** | Follow-up to reduce recurrence: template change, CI rule, checkpoint, training link |
+| `status` | e.g. `filed` / `contained` / `remediated` / `closed` (per org workflow) |
+| **Verification** | How this record and containment were **checked** (who/when, or “automated link from ticket #…”) |
 
-## What was required
+## Optional: severity
 
-**Contract limit or rule (quote or reference):**  
-- 
-
-## What happened
-
-**Observed behavior (facts, links to logs, diff ids, message ids):**  
-- 
+| Field | Value |
+|-------|--------|
+| `severity` | e.g. `attempted_unauthorized` / `overreach` / `false_completion` / `data_exposure_risk` / `supervisor_overreach` |
 
 ## Root cause (preliminary)
 
 - 
 
-## Containment
-
-**Immediate action taken (revoke, block, revert):**  
-- 
-
-## Remediation
+## Remediation detail (if not fully captured above)
 
 | Type | Action |
 |------|--------|

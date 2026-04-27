@@ -3,7 +3,7 @@
 **Version:** 1.0  
 **Status:** implementable — fields and rules are intended to map directly to policy engines, tickets, and review workflows.
 
-This document defines **core principles** (including **supervisor** **non-execution** and **no direct** **mutable** **reality** by default, §1.1), **required contract fields**, **execution identity rules**, the **mutation model**, **blast radius**, **stop/escalation**, **verification**, **violation handling**, and **versioning**. Tools and supervisors **should** treat a task as non-compliant if required fields are missing or contradictory. The **supervisor** must **not** treat executor output as proof of success until it is **checked** against the contract (see §1 and §7).
+This document defines **core principles** (including **supervisor** **non-execution** and **no direct** **mutable** **reality** by default, §1.1), **required contract fields**, **execution identity rules**, the **mutation model**, **blast radius**, **stop/escalation**, **verification**, **violation handling** (including **closure-gated** filing when breaches are detected, §8), and **versioning**. Tools and supervisors **should** treat a task as non-compliant if required fields are missing or contradictory. The **supervisor** must **not** treat executor output as proof of success until it is **checked** against the contract (see §1 and §7).
 
 ---
 
@@ -15,7 +15,7 @@ This document defines **core principles** (including **supervisor** **non-execut
 4. **Mutations are whitelisted, not blacklisted** — Allow lists of paths, operations, and side channels; default deny.
 5. **Stoppable** — The contract defines **when to stop** and **when to escalate** without finishing.
 6. **Verifiable** — Success is defined so a **verifier** (human or automated) can say pass or fail with evidence.
-7. **Violations are first-class** — Breaches and near-misses are recorded in a **violation record**, not only chat logs.
+7. **Violations are first-class and closure-gated** — Breaches and near-misses are recorded in a **structured violation record**, not only chat logs. If a review or verifier **detects** a violation (see §8), **acceptance and closure are blocked** until the required record(s) exist and are linked to the task—having a template on disk is **not** sufficient.
 8. **Small blast radius** — Limits on scope, rate, and rollback are part of the contract, not an afterthought.
 9. **Verify-before-acceptance (supervisor)** — Executors are **capable but fallible**; their **outputs are claims** until independently checked against the **task contract** and `success_criteria`. The supervisor (or a designated, contract-backed **verifier**) must **not** accept work on **executor self-report alone**. **Acceptance** requires **evidence**: e.g. diffs, artifacts, command exit status, test/lint results, and—where applicable—**commit message**, **scope** (files and blast radius), **side effects**, and **metadata** (including absence of disallowed trailers or other forbidden markers). **Repeated executor drift** should trigger **tighter** contracts, checklists, or tooling—not repeated informal waivers.
 10. **Control plane, not actuator (supervisor / orchestrator)** — The main **supervisor** or **orchestrator** is the **governance and coordination** layer, not a substitute for a bound **executor** during **normal** work. It **defines intent**, **writes and approves contracts**, **selects or creates** execution identities, **delegates** all mutable work, **monitors** boundaries, **verifies** outputs against the contract, and **records** violations. It does **not** act as the **executor** by default. **Normative detail:** §1.1, optional contract fields in §2.1, and `schemas/task-contract.schema.json` (`supervisor_role`, `direct_execution_policy`, `execution_bridge`).
@@ -72,6 +72,8 @@ A **task contract** must include the following, using the names below or a docum
 - `supervisor_role` — Declares the operating posture of the main supervisor/orchestrator (e.g. `control_plane_only` — no executor duties in normal mode). Complements §1.1; use to drive UI or policy.  
 - `direct_execution_policy` — **Whether** the supervisor is **forbidden** from mutating reality directly (`forbidden` default), may do so **only** under a documented `execution_bridge` (`bridge_only`), or is **not** in scope (e.g. human-only org policy encoded elsewhere) (`not_applicable`).  
 - `execution_bridge` — When **unavoidable** direct action occurs without a **separate** executor, document the **scope**, **mutation permission**, **rollback/containment**, **verification**, and **post-step revocation** of elevated access; absence when required is a **governance** failure (see §1.1(5–6), §8).
+- `violation_policy` — Encodes closure behavior: e.g. **`closure_requires_violation_record_when_detected`** so tools **block** or **flag** accept/close without a filed record when a violation was detected (§8). Optional pointer to the record template path.
+- `violation_records` — Array of **`violation_id`** (and optional **`record_uri`**, **`filed_at`**, **`status`**) linking filed structured records to this task; **must** be populated before closure when §8 applies.
 
 ---
 
@@ -161,10 +163,13 @@ If execution would exceed the declared surface, the executor must **stop** and r
 
 ## 8. Violation handling
 
-1. **Record** — Use `templates/violation-record.md` (or equivalent) for: what limit, what was observed, which identity, timeframe, and **remediation** (revoke, fix forward, new contract). Include **supervisor** **orchestrator** **direct** **mutation** without a **bound** **executor** or without a required **execution bridge** (§1.1).
-2. **Severity** — Classify: attempted unauthorized access, success claimed without evidence, overreach, data exposure, **supervisor conflation of control plane and executor**, **bypass of delegation**, etc.
-3. **No punishment theater** — Purpose is **audit and policy improvement**; repeated violations trigger **tighter** default contracts, not one-off arguments.
-4. **Disclosure** — If policy requires, violations feed security or compliance process as defined by the org (out of band to this spec).
+1. **File before close (normative)** — When a **boundary breach**, **forbidden action**, **unauthorized mutation**, **false-completion risk**, **supervisor overreach** (including **direct** mutable work without a **bound** executor or without a required **execution bridge**, §1.1), or **repeated drift** after explicit correction is **detected** during review or verification, a **structured violation record** **must** be **filed** (per `templates/violation-record.md` or equivalent) **before** the task, review, or acceptance workflow may be **closed** or marked **accepted**. Waiving the record is **non-conformant** unless org policy defines a **single** documented exception path (e.g. legal hold)—and that exception must itself be auditable.
+2. **Record** — Each record must tie to **`violation_id`**, **`task_id`**, **`execution_id`** where applicable, **`detected_at`**, **`detected_by`**, the **rule violated**, **evidence**, **containment**, **prevention**, **status**, and **verification** (see template). Include **remediation** (revoke, fix forward, new contract) as part of containment or follow-up.
+3. **Conformance: block or flag closure** — Implementations **must** **block** or **explicitly flag** task/review closure when a detected violation has **no** linked structured record (or when required fields are missing). Silent closure with only informal chat notes is **non-conformant**.
+4. **Examples (non-exhaustive)** — **Forbidden commit metadata** (e.g. disallowed trailers, mis-attribution) when the contract or org policy forbids them. **Executor overreach**: paths, operations, or side channels outside the contract. **False completion**: “done” or pass claimed while checks failed, evidence missing, or `success_criteria` unmet. **Supervisor direct mutation** without **execution bridge** when policy requires delegation. **Repeated drift**: same class of scope or boundary miss after a prior correction or checkpoint.
+5. **Severity** — Classify: attempted unauthorized access, success claimed without evidence, overreach, data exposure, **supervisor conflation of control plane and executor**, **bypass of delegation**, etc.
+6. **No punishment theater** — Purpose is **audit and policy improvement**; repeated violations trigger **tighter** default contracts, not one-off arguments.
+7. **Disclosure** — If policy requires, violations feed security or compliance process as defined by the org (out of band to this spec).
 
 ---
 
@@ -185,7 +190,7 @@ A **conformant** implementation:
 - Ensures **expert identity selection or creation** occurs **before** execution and that the active identity satisfies §3.2 where the implementation claims full conformance.  
 - Binds **execution identity** to **allowed list** in the contract.  
 - Enforces **allow lists** for paths, operations, and side channels.  
-- Produces or accepts **violation records** in the standard shape.  
+- Produces or accepts **violation records** in the standard shape and **enforces the closure gate** (§8): **no** accept/close while a **detected** violation lacks a **filed**, **structured** record linked to the task.  
 - Runs **verification** before marking success, and does **not** equate “executor said done” with **pass** without **independent** evidence per §7 (including **scope, diff, status, side effects, and commit metadata** where the contract requires them).  
 - Supports **supervisor verify-before-acceptance**: mechanisms or checklists that force review of executor output against the **task contract**, not trust-by-default.  
 - Does **not** use the **supervisor** identity as the **default** **path** for **mutable** work: **all** such work runs under **bound** **execution** **identities** and contracts; **execution bridge** (§1.1) is **exceptional** and **documented** when no executor is available.

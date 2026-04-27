@@ -121,6 +121,49 @@
       },
       "additionalProperties": true
     },
+    "violation_policy": {
+      "type": "object",
+      "description": "Closure policy for detected violations. See docs/standard.md §8.",
+      "properties": {
+        "closure_requires_violation_record_when_detected": {
+          "type": "boolean",
+          "description": "When true, conformant workflows must block or flag task/review acceptance until each detected violation has a filed structured record linked to this task."
+        },
+        "record_template": {
+          "type": "string",
+          "description": "Optional URI or path to the violation record template (e.g. templates/violation-record.md)."
+        }
+      },
+      "additionalProperties": true
+    },
+    "violation_records": {
+      "type": "array",
+      "description": "Links or embedded refs to filed violation records for this task; required before closure when violations were detected.",
+      "items": {
+        "type": "object",
+        "required": ["violation_id"],
+        "properties": {
+          "violation_id": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Stable id matching the filed record."
+          },
+          "record_uri": {
+            "type": "string",
+            "description": "Path, ticket URL, or object id where the structured record lives."
+          },
+          "filed_at": {
+            "type": "string",
+            "description": "ISO 8601 when the record was filed."
+          },
+          "status": {
+            "type": "string",
+            "description": "Workflow state of the violation (e.g. filed, contained, remediated)."
+          }
+        },
+        "additionalProperties": true
+      }
+    },
     "execution_identities": {
       "type": "array",
       "minItems": 1,

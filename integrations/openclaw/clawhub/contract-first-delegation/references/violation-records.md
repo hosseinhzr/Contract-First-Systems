@@ -2,6 +2,10 @@
 
 A **violation** is a crossed limit, attempted unauthorized action, false completion risk, or material near-miss—**not** a normal test failure that stayed inside contract (that is a stop + fix within scope).
 
+## Mandatory before close when detected
+
+If a review, verifier, or supervisor **detects** any situation in **When to record** below, a **structured** record **must** be **filed** and **linked** to the `task_id` **before** the task or review is **accepted** or **closed**. **Do not** skip filing because a template exists in the repo. Conformant tooling **blocks** or **flags** closure when a detected violation has no record (see `docs/standard.md` §8, `violation_policy` / `violation_records` in the task contract schema).
+
 ## When to record
 
 Create a structured violation record when **any** of these occur:
@@ -12,6 +16,7 @@ Create a structured violation record when **any** of these occur:
 - **Overreach**: scope creep executed before new approval (even if reverted).
 - **Data exposure** risk: logs, artifacts, or messages include data outside `blast_radius` or policy.
 - **Elevation attempt**: executor tried to broaden its own authority instead of stopping.
+- **Supervisor / orchestrator overreach**: direct mutation of durable or externally visible state without a **bound** executor or without a required **execution bridge** when policy requires one (see `docs/standard.md` §1.1).
 
 Normal **stop_conditions** triggered **without** a breach (e.g. asked to escalate cleanly) ⇒ log for audit if your org requires it, but severity is lower than an overreach violation.
 
@@ -28,14 +33,17 @@ Use consistent labels your org can aggregate:
 
 ## Record contents (minimum)
 
-Align fields with your template; include at least:
+Align fields with `templates/violation-record.md` at repo root when vendored; include at least:
 
 - `violation_id`, `task_id`, `execution_id`, `detected_at`, `detected_by`
 - **Rule violated** — quote contract clause or field.
-- **Facts** — diffs, command lines, message ids, API request ids (redact secrets).
-- **Severity**
+- **Evidence** — diffs, command lines, message ids, API request ids (redact secrets).
+- **Severity** (recommended)
 - **Containment** — immediate: revoke token, revert commit, block job, notify supervisor.
+- **Prevention** — what will reduce recurrence (template, CI, checkpoint).
 - **Remediation** — technical fix, process change, new `task_id` for legitimate follow-up.
+- `status` — workflow state of the violation record.
+- **Verification** — how filing and containment were confirmed.
 - **Disclosure** — security/compliance path if required by policy.
 
 Purpose: **audit and policy improvement**, not blame theater. Repeated patterns ⇒ tighter default contracts and tooling checks.
