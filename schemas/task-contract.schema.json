@@ -1,0 +1,153 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/contract-first-systems/task-contract.schema.json",
+  "title": "Task contract (key fields)",
+  "description": "Lightweight JSON Schema for contract-first task contracts. See docs/standard.md for normative rules.",
+  "type": "object",
+  "required": [
+    "task_id",
+    "version",
+    "summary",
+    "supervisor",
+    "time_bounds",
+    "execution_identities",
+    "allowed_paths",
+    "allowed_operations",
+    "success_criteria",
+    "verification",
+    "stop_conditions",
+    "escalation",
+    "blast_radius"
+  ],
+  "properties": {
+    "task_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Stable unique id for this task across retries."
+    },
+    "version": {
+      "type": "string",
+      "description": "Contract or standard version, e.g. 1.0"
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1
+    },
+    "supervisor": {
+      "type": "string",
+      "description": "Accountable approver (user, team, or role id)."
+    },
+    "intent": {
+      "type": "string"
+    },
+    "non_goals": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "time_bounds": {
+      "type": "object",
+      "properties": {
+        "not_before": { "type": "string" },
+        "not_after": { "type": "string" },
+        "max_duration": { "type": "string", "description": "e.g. 2h, 15m" }
+      },
+      "additionalProperties": true
+    },
+    "execution_identities": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["execution_id", "role"],
+        "properties": {
+          "execution_id": { "type": "string" },
+          "role": { "type": "string" },
+          "runtime": { "type": "string" }
+        },
+        "additionalProperties": true
+      }
+    },
+    "allowed_paths": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Path or resource prefix allow list; empty array means no file/path mutation."
+    },
+    "exclusions": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "allowed_operations": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "enum": ["read", "write", "delete", "exec", "api_call", "send_message", "other"]
+      }
+    },
+    "side_effect_channels": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "side_effect_limits": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "success_criteria": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string" }
+    },
+    "verification": {
+      "type": "object",
+      "properties": {
+        "automated": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "human_signoff": {
+          "type": "object",
+          "properties": {
+            "required": { "type": "boolean" },
+            "who": { "type": "string" }
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "stop_conditions": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string" }
+    },
+    "escalation": {
+      "type": "object",
+      "properties": {
+        "channels": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "additionalProperties": true
+    },
+    "blast_radius": {
+      "type": "string",
+      "minLength": 1
+    },
+    "audit": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "dependencies": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "handoff": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "supersedes": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": true
+}
