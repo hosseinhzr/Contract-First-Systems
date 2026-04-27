@@ -17,7 +17,14 @@
     "verification",
     "stop_conditions",
     "escalation",
-    "blast_radius"
+    "blast_radius",
+    "identity_selection",
+    "boundary_monitoring",
+    "supervisor_role",
+    "direct_execution_policy",
+    "execution_bridge",
+    "violation_policy",
+    "violation_records"
   ],
   "properties": {
     "task_id": {
@@ -169,7 +176,17 @@
       "minItems": 1,
       "items": {
         "type": "object",
-        "required": ["execution_id", "role"],
+        "required": [
+          "execution_id",
+          "role",
+          "display_name",
+          "visual_marker",
+          "expertise_domain",
+          "communication_style",
+          "execution_boundary",
+          "allowed_resources",
+          "forbidden_resources"
+        ],
         "properties": {
           "execution_id": { "type": "string" },
           "display_name": {

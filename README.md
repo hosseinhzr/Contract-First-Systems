@@ -86,6 +86,8 @@ As agents proliferate, the missing piece is not smarter models; it is **governan
 
 For machine-readable validation, see `schemas/task-contract.schema.json` and the formal spec in `docs/standard.md`.
 
+**Mechanical verifier (local):** from the repo root, run `./scripts/verify-contract-first.sh`. It checks required files, JSON schema shape, normative phrases across the standard/templates/schema/skill corpus, ClawHub skill layout, and—when present—the `commit-msg` hook behavior. Exits non-zero if any check fails.
+
 **Adoption** for new tools: read `GOVERNANCE.md` for capability declarations and how supervisors grant limited authority.
 
 ---
