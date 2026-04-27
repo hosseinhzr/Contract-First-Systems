@@ -10,7 +10,7 @@ This document explains **how** organizations (or solo operators) can adopt the s
 |------|-----------------|
 | **Standard owner** | Maintains `docs/standard.md`, templates, and schema; bumps version on breaking changes. |
 | **Tool author** | Publishes a **capability manifest** for the tool (see below). |
-| **Supervisor** | Issues or approves **task contracts** that reference capabilities at **subset** of what the tool supports. |
+| **Supervisor** | Issues or approves **task contracts** that reference capabilities at **subset** of what the tool supports; **matches or creates** a **concrete execution identity** (expertise, boundary, resources) **before** execution and monitors boundaries through the run. |
 | **Verifier** | Human or system that enforces `success_criteria` consistently. |
 | **Operator** | Ensures runtimes can enforce or **detect** contract violations and produce **violation records**. |
 
@@ -26,7 +26,7 @@ Each tool (or each **major** version) should ship a **capability manifest** that
 2. **Operations** — The full set of `allowed_operations` the tool is capable of (not what *this* run may use).  
 3. **Path / resource model** — Whether the tool touches local files, which roots it expects, and whether it can be confined to prefixes.  
 4. **Side channels** — All external systems it can contact (APIs, email, webhooks) and under what *generic* use cases.  
-5. **Identity support** — How the tool **labels** its runs (`task_id`, `execution_id` in env vars, log fields, or HTTP headers).  
+5. **Identity support** — How the tool **labels** its runs (`task_id`, `execution_id` in env vars, log fields, or HTTP headers) and whether it can carry an **identity profile** (display name, visual marker, expertise/domain, boundary summary) alongside those ids.  
 6. **Idempotency and retries** — How duplicate requests are recognized or not.  
 7. **Enforcement** — Whether the tool can **self-limit** to a supplied contract, or only **report** what it did for post-hoc checks.
 
@@ -51,9 +51,10 @@ The manifest is **not** a contract by itself. It is the **ceiling** of what the 
 
 1. **Start from a template** — `templates/task-spec.md` and `examples/` for the class of work.  
 2. **Subset the manifest** — The contract’s `allowed_operations`, `allowed_paths`, and `side_effect_channels` are **intersections** with the org’s need, not the tool’s full power.  
-3. **Name identities** — List allowed `execution_id` patterns or service accounts, not “any user.”  
-4. **Tie verification to evidence** — Define what "green" means before execution starts.  
-5. **Version and supersede** — If scope must grow, issue a new `task_id` with `supersedes` to preserve audit chain.
+3. **Name identities** — List allowed `execution_id` patterns or service accounts, not “any user.” For each task, **record identity selection**: use an **existing** profile that fits the needed **expertise/domain** and **boundary**, or **create** a new named identity before execution; document **why** (`identity_selection` in schema / task template).  
+4. **Checkpoint boundaries** — For longer or multi-step work, require **anti-blur checkpoints** so scope and tool permissions do not drift; if expertise no longer matches, **stop** and re-issue contract or identity—do not expand ad hoc.  
+5. **Tie verification to evidence** — Define what "green" means before execution starts.  
+6. **Version and supersede** — If scope must grow, issue a new `task_id` with `supersedes` to preserve audit chain.
 
 **Grant least privilege:** the default is **tight**; loosen only when a concrete step fails under verification (then **new** contract, not on-the-fly permission expansion).
 

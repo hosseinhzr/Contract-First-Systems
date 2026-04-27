@@ -25,9 +25,10 @@ Contract-first design addresses these by making **what may happen** and **how we
 
 1. A **supervisor** (human or system) issues a **task contract** before sensitive work: allowed paths, allowed operations, time bounds, and success tests.
 2. The **contract** is the source of truth for authority—not chat history, not implicit tool defaults.
-3. An **executor** runs only under a declared **execution identity** (a stable name, scope, and parent contract reference).
-4. A **verifier** checks outcomes against the contract (automated where possible, human sign-off where required).
-5. **Violation records** capture what crossed the line, for audit and policy improvement.
+3. A **supervisor** **matches or creates** a **concrete execution identity** before work starts: right **expertise/domain**, **visual marker**, **communication style**, and a **precise boundary**—so the wrong executor, vague “agent” authority, and scope blur are caught early.
+4. An **executor** runs only under that declared **execution identity** (stable id, profile, and parent contract reference); every action maps to **one** identity and boundary.
+5. A **verifier** checks outcomes against the contract (automated where possible, human sign-off where required).
+6. **Violation records** capture what crossed the line, for audit and policy improvement.
 
 Nothing here requires a specific product; it is a **pattern** you can implement with scripts, policy-as-code, ticket workflows, or agent frameworks.
 
@@ -37,7 +38,7 @@ Nothing here requires a specific product; it is a **pattern** you can implement 
 
 | Component | Role |
 |-----------|------|
-| **Supervisor** | Creates or approves contracts, binds identities, may halt or escalate. Not the same role as the executor. |
+| **Supervisor** | Creates or approves contracts; **selects existing or creates new** execution identity (expertise + boundary) **before** execution; monitors boundaries; may halt or escalate. Not the same role as the executor. |
 | **Contract** | Declares intent, bounds, allowed mutations, success criteria, stop/escalation rules, and verification hooks. |
 | **Executor** | Performs work only within the contract and identity; records actions for traceability. |
 | **Verifier** | Asserts that post-state matches success criteria; may be automated, dual-control, or sampled. |
@@ -53,10 +54,11 @@ Multi-tool and multi-agent systems fail when every component negotiates ad hoc p
 
 - **Standardizes** how tools **request** capability (pre-declared scopes, not “trust me”).
 - **Standardizes** how supervisors **grant** authority in **revocable, auditable** units.
+- **Expert identity matching** — Supervisors **select an existing** named identity or **create** a new one **before** execution, each with explicit **expertise/domain**, **boundary**, and **allowed/forbidden resources**. That is the practical antidote to wrong-executor selection, vague agent authority, long-run boundary blur, lost accountability across executors, and permission grants invented step-by-step.
 - **Limits blast radius** by construction—contracts say where effects may occur.
 - **Makes behavior comparable** across vendors: same fields, same violation semantics, different implementations.
 
-As agents proliferate, the missing piece is not smarter models; it is **governance-shaped interfaces** between control planes and execution.
+As agents proliferate, the missing piece is not smarter models; it is **governance-shaped interfaces** between control planes and execution, with **identity and boundary** as first-class data—not chat vibes.
 
 ---
 
@@ -76,7 +78,7 @@ As agents proliferate, the missing piece is not smarter models; it is **governan
 
 1. **Copy** `templates/task-spec.md` and `templates/execution-identity.md`.
 2. **Fill** task id, time bounds, allowed paths, allowed operations, **success criteria** (measurable), and **stop/escalation** (when to halt and notify).
-3. **Bind** an execution identity: name, parent contract, and scope.
+3. **Select or create** an execution identity **before** the first privileged step: document **existing vs new**, **rationale**, expertise/domain, visual marker, communication style, and **precise boundary** (`templates/execution-identity.md`). Plan **boundary checkpoints** for longer runs.
 4. **Run** the executor only with those files attached or registered in your supervisor.
 5. **Verify** using the same checklist every time; file a **violation record** if limits were crossed.
 

@@ -53,6 +53,44 @@
       },
       "additionalProperties": true
     },
+    "identity_selection": {
+      "type": "object",
+      "description": "Supervisor record: use an existing allowed identity or create a new one before execution; rationale ties expertise and boundary to the task.",
+      "properties": {
+        "decision": {
+          "type": "string",
+          "enum": ["use_existing", "create_new"],
+          "description": "Whether an existing identity was selected or a new named identity was created for this task."
+        },
+        "chosen_execution_id": {
+          "type": "string",
+          "description": "Primary execution_id bound for this run after selection."
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Why this identity's expertise/domain and boundary fit the task, or why creation was required."
+        },
+        "expertise_match_notes": {
+          "type": "string",
+          "description": "Optional detail on domain fit, tool familiarity, or risk."
+        }
+      },
+      "required": ["decision", "rationale"],
+      "additionalProperties": true
+    },
+    "boundary_monitoring": {
+      "type": "object",
+      "description": "Anti-blur checkpoints during execution; restate identity boundary and contract limits.",
+      "properties": {
+        "checkpoints": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "When to re-verify scope, e.g. time triggers, step counts, or before side effects."
+        }
+      },
+      "additionalProperties": true
+    },
     "execution_identities": {
       "type": "array",
       "minItems": 1,
@@ -61,8 +99,48 @@
         "required": ["execution_id", "role"],
         "properties": {
           "execution_id": { "type": "string" },
+          "display_name": {
+            "type": "string",
+            "description": "Human-meaningful name paired with execution_id."
+          },
           "role": { "type": "string" },
-          "runtime": { "type": "string" }
+          "runtime": { "type": "string" },
+          "visual_marker": {
+            "type": "string",
+            "description": "Emoji and/or color or UI token for operator recognition."
+          },
+          "expertise_domain": {
+            "type": "string",
+            "description": "What this identity is for on this task (skills, repos, risk class)."
+          },
+          "communication_style": {
+            "type": "string",
+            "description": "Expected reporting style for this identity."
+          },
+          "execution_boundary": {
+            "type": "string",
+            "description": "Precise in-scope vs out-of-scope statement for this identity on this task."
+          },
+          "allowed_resources": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Narrow list of paths, tools, accounts aligned with the contract."
+          },
+          "forbidden_resources": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Explicit denies for this identity; must not exceed contract exclusions."
+          },
+          "executor_stop_conditions": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Identity-level halt triggers aligned with contract stop_conditions."
+          },
+          "executor_escalation": {
+            "type": "object",
+            "description": "Identity-level escalation path; payload should include task_id and execution_id.",
+            "additionalProperties": true
+          }
         },
         "additionalProperties": true
       }

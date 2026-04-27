@@ -37,17 +37,19 @@ Details: `references/task-types.md`.
 ## Operating procedure
 
 1. **Classify** the task (A–D). If **D**, escalate; do not broaden scope to “make progress.”
-2. **Draft the contract** using field guidance in `references/contract-fields.md` (mirror org templates if available).
-3. **Bind execution identity** — exactly **one** primary `execution_id` (and alternates only if the contract lists them). Declare it in messages, logs, or metadata **before** the first privileged action. No identity borrowing.
-4. **Permission** — default **read-only**. **Mutation** (including **all** side-effect channels) must appear under `allowed_operations`, `allowed_paths`, and/or `side_effect_channels` with limits. Unlisted = denied.
-5. **Scope guards** — set `allowed_paths`, `exclusions`, `side_effect_limits`, `blast_radius`, `stop_conditions`, `escalation`, `verification`, and `success_criteria`. Prefer narrowest prefixes; exclusions win over broad allows.
-6. **Execute** only inside the contract. If you hit ambiguity, missing access, or a limit: **stop**, do not finish with unrelated edits.
-7. **Verify** against `success_criteria` and the `verification` plan **before** claiming success. Failed verification ⇒ not done; rollback or new contract.
-8. **Violations** — if a boundary was crossed or false completion risk exists, file a structured record per `references/violation-records.md`.
+2. **Expert identity first (supervisor step)** — Before any privileged action, decide: does an **existing** named execution identity have the right **expertise/domain** and **declared boundary** for this task? If **yes**, use it and record **why** it fits. If **no** and execution is required, **define and bind a new** concrete identity **first**: stable `execution_id`, **display name**, **emoji/color** (or equivalent marker), **expertise/domain**, **communication style**, **precise execution boundary**, **allowed/forbidden resources**, **stop conditions**, and **escalation** for boundary mismatch. Never run as a vague “agent” with an unstated boundary.
+3. **Draft the contract** using field guidance in `references/contract-fields.md` (mirror org templates if available). Include `identity_selection` (use_existing vs create_new + rationale) and `boundary_monitoring` checkpoints when the run is multi-step or long-lived.
+4. **Bind execution identity** — exactly **one** primary `execution_id` (and alternates only if the contract lists them). Declare it in messages, logs, or metadata **before** the first privileged action. No identity borrowing. **Every** action maps to **one** identity and its boundary; if the work outgrows that boundary, **stop** and **escalate**—do not silently expand tool permissions or scope.
+5. **Permission** — default **read-only**. **Mutation** (including **all** side-effect channels) must appear under `allowed_operations`, `allowed_paths`, and/or `side_effect_channels` with limits. Unlisted = denied. Do not grant **ad hoc** tool access step-by-step; align with the identity’s allowed resources and the contract.
+6. **Scope guards** — set `allowed_paths`, `exclusions`, `side_effect_limits`, `blast_radius`, `stop_conditions`, `escalation`, `verification`, and `success_criteria`. Prefer narrowest prefixes; exclusions win over broad allows.
+7. **Boundary checkpoints** — During execution, re-state the active identity, its boundary, and contract limits at planned checkpoints (and before irreversible or external side effects). If expertise or boundary no longer matches the work, **stop** and obtain a matching identity or new contract.
+8. **Execute** only inside the contract. If you hit ambiguity, missing access, or a limit: **stop**, do not finish with unrelated edits.
+9. **Verify** against `success_criteria` and the `verification` plan **before** claiming success. Failed verification ⇒ not done; rollback or new contract.
+10. **Violations** — if a boundary was crossed or false completion risk exists, file a structured record per `references/violation-records.md`.
 
 ## Roles
 
-- **Supervisor** — approves contract, can revoke, receives escalations; does not silently substitute scope.
+- **Supervisor** — approves contract; **matches or creates** execution identity before execution; keeps boundaries explicit and monitored; can revoke; receives escalations; does not silently substitute scope or blur identity boundaries.
 - **Executor** — declares identity, acts only within contract, verifies, records violations; does not expand its own authority.
 
 If **policy** states execution must be delegated (e.g. production changes via a specific pipeline), **do not** bypass with direct local action—obtain the right executor and contract.

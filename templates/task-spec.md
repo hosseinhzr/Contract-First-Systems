@@ -37,6 +37,31 @@ What this task must *not* do.
 | | primary | |
 | | optional failover | |
 
+### Identity selection (required before execution)
+
+The **supervisor** completes this **before** any privileged action. Execution must not proceed on an unnamed or boundary-vague “agent.”
+
+| Question | Answer |
+|----------|--------|
+| **Decision** | ☐ Use **existing** allowed identity  ☐ **Create / spawn** new named identity (add to allow list or supersede contract) |
+| **Chosen `execution_id`** | |
+| **Rationale** | Why this identity’s **expertise/domain** and **declared boundary** fit **this** task (or why a new one was required) |
+| **Escalation if mismatch** | If mid-run work exceeds this identity’s boundary: stop, escalate to ________, do not silently expand scope |
+
+Attach a completed `templates/execution-identity.md` per active identity (or equivalent JSON fields).
+
+### Boundary monitoring / anti-blur checkpoints
+
+Long or multi-step work **must** include explicit checkpoints where the executor (or supervisor) re-states: active identity, its boundary, contract `allowed_paths` / `exclusions`, and **non-goals**.
+
+| When (trigger or time) | Checkpoint: restate boundary + limits | Pass / adjust / stop |
+|------------------------|----------------------------------------|----------------------|
+| e.g. start of session | | |
+| e.g. every N steps or 1h | | |
+| e.g. before side effects | | |
+
+If a checkpoint reveals **expertise or boundary mismatch**, **stop** and **escalate**; obtain a matching identity or a new contract—do not blur roles.
+
 ## Mutation scope
 
 **`allowed_paths` (prefixes only):**  

@@ -31,9 +31,11 @@ Ambiguous intent ⇒ **Type D**; resolve before mutation.
 
 | Field | Guidance |
 |-------|----------|
-| `execution_identities` | Allow list of ids **and** roles (primary, failover, verifier). Exactly one primary acts per step unless contract defines coordination. |
+| `execution_identities` | Allow list of ids **and** roles (primary, failover, verifier). Each entry **should** include **display name**, **visual marker** (emoji/color), **expertise_domain**, **communication_style**, **execution_boundary**, **allowed_resources**, **forbidden_resources**, and identity-level **executor_stop_conditions** / **executor_escalation** aligned with the contract. Exactly one primary acts per step unless contract defines coordination. |
+| `identity_selection` | **Supervisor** records **use_existing** vs **create_new**, **chosen_execution_id**, and **rationale** (why this identity’s expertise and boundary fit the task). Filled **before** execution. |
+| `boundary_monitoring` | **Anti-blur checkpoints** (when to restate identity + contract limits); required for long or multi-step runs. |
 
-Bind **before** first privileged action; stable for the run; child steps trace to root `execution_id`.
+**Supervisor rule:** match an existing allowed identity to the task’s needed expertise and boundary, or **create** a new named identity **before** the first privileged action. Bind **before** first privileged action; stable for the run; child steps trace to root `execution_id`. If work exceeds the identity boundary, **stop** and **escalate**—no ad hoc permission creep.
 
 ## Mutation and resources
 
