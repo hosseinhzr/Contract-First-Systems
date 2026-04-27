@@ -38,7 +38,7 @@ Nothing here requires a specific product; it is a **pattern** you can implement 
 
 | Component | Role |
 |-----------|------|
-| **Supervisor** | Creates or approves contracts; **selects existing or creates new** execution identity (expertise + boundary) **before** execution; monitors boundaries; may halt or escalate. Not the same role as the executor. |
+| **Supervisor** | Creates or approves contracts; **selects existing or creates new** execution identity (expertise + boundary) **before** execution; **delegates** mutable work to that identity; monitors boundaries; **verifies** before acceptance; may halt or escalate. **Control plane**, not the default **actuator** (see `docs/standard.md` §1.1). Not the same role as the executor. |
 | **Contract** | Declares intent, bounds, allowed mutations, success criteria, stop/escalation rules, and verification hooks. |
 | **Executor** | Performs work only within the contract and identity; records actions for traceability. |
 | **Verifier** | Asserts that post-state matches success criteria; may be automated, dual-control, or sampled. |
@@ -49,6 +49,8 @@ Together, these separate **what is requested** (intent in the contract) from **h
 ---
 
 ## Why this is the backbone for future tools and agents
+
+**Separation of control and execution** — The **orchestrator** or **main supervisor** should **not** be the same runtime path that **blindly** **writes** repos, **calls** **side-effecting** **APIs**, or **mutates** **infrastructure** as its default. It is the **control plane** (intent, **contracts**, **identity** **binding**, **delegation**, **monitoring**, **verification**, **violation** **records**). All **mutable** work runs under a **bound execution identity** and **task** **contract**; if no executor exists, only an **explicit execution bridge** (narrow scope, permission, **rollback**, verification, **revocation**) makes **direct** action **governable**—otherwise it is a **violation** (`docs/standard.md` §1.1). That split is the **governance** **backbone** for future toolchains and **multi**-**agent** systems: **policy** and **action** **stay** **separable** **under** **audit**.
 
 Multi-tool and multi-agent systems fail when every component negotiates ad hoc permissions in natural language. They also fail when a **supervisor** treats **executor output** as **proof** without **independent** checking—executors are **capable but fallible**; their summaries are **claims** until **verified** against the **task contract** (evidence: **diff, scope, status, artifacts, side effects, commit metadata** as applicable). **Verify-before-acceptance** is **governance**, not suspicion: the same **success bar** every time, whether the worker is human or automated. A **contract layer**:
 

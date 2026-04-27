@@ -3,7 +3,7 @@
 **Version:** 1.0  
 **Status:** implementable — fields and rules are intended to map directly to policy engines, tickets, and review workflows.
 
-This document defines **core principles**, **required contract fields**, **execution identity rules**, the **mutation model**, **blast radius**, **stop/escalation**, **verification**, **violation handling**, and **versioning**. Tools and supervisors **should** treat a task as non-compliant if required fields are missing or contradictory. The **supervisor** must **not** treat executor output as proof of success until it is **checked** against the contract (see §1 and §7).
+This document defines **core principles** (including **supervisor** **non-execution** and **no direct** **mutable** **reality** by default, §1.1), **required contract fields**, **execution identity rules**, the **mutation model**, **blast radius**, **stop/escalation**, **verification**, **violation handling**, and **versioning**. Tools and supervisors **should** treat a task as non-compliant if required fields are missing or contradictory. The **supervisor** must **not** treat executor output as proof of success until it is **checked** against the contract (see §1 and §7).
 
 ---
 
@@ -18,6 +18,21 @@ This document defines **core principles**, **required contract fields**, **execu
 7. **Violations are first-class** — Breaches and near-misses are recorded in a **violation record**, not only chat logs.
 8. **Small blast radius** — Limits on scope, rate, and rollback are part of the contract, not an afterthought.
 9. **Verify-before-acceptance (supervisor)** — Executors are **capable but fallible**; their **outputs are claims** until independently checked against the **task contract** and `success_criteria`. The supervisor (or a designated, contract-backed **verifier**) must **not** accept work on **executor self-report alone**. **Acceptance** requires **evidence**: e.g. diffs, artifacts, command exit status, test/lint results, and—where applicable—**commit message**, **scope** (files and blast radius), **side effects**, and **metadata** (including absence of disallowed trailers or other forbidden markers). **Repeated executor drift** should trigger **tighter** contracts, checklists, or tooling—not repeated informal waivers.
+10. **Control plane, not actuator (supervisor / orchestrator)** — The main **supervisor** or **orchestrator** is the **governance and coordination** layer, not a substitute for a bound **executor** during **normal** work. It **defines intent**, **writes and approves contracts**, **selects or creates** execution identities, **delegates** all mutable work, **monitors** boundaries, **verifies** outputs against the contract, and **records** violations. It does **not** act as the **executor** by default. **Normative detail:** §1.1, optional contract fields in §2.1, and `schemas/task-contract.schema.json` (`supervisor_role`, `direct_execution_policy`, `execution_bridge`).
+
+### 1.1 Supervisor and orchestrator: non-execution and no direct mutable reality (normative)
+
+1. **Control plane vs actuator** — The supervisor is the **control plane** (policy, intent, routing, monitoring, verification). **Executors** (human or automated) are the **actuators**: they perform **implementation** and **side-effecting** steps under a **task contract** and a **bound execution identity** (see §3). The supervisor is **not** the actuator in normal operation.
+
+2. **What “touch mutable reality” means** — In this standard, that means causing or performing **durable** or **externally visible** **change** outside read-only **verification** as permitted in §1.1(4). **Examples (non-exhaustive):** writing, deleting, or moving **files** or **repo** state; **branch**/**push**/**PR** /**merge** actions that change shared history; **config** or **secret** **apply**; **service** or **infrastructure** **mutations** (deploy, restart, DNS, IAM, network rules); **database** DML/DDL; **sending** **messages** (email, chat, webhooks) or enqueuing work; **calling** **APIs** with **side effects**; **issuing** or **rotating** **credentials**; or other **persistent state** change not solely covered by allowed **read/inspect** for verification. **Not** “mutable reality”: **read-only** inspection (logs, diffs, `GET` where idempotent, dry-run) used only to **verify** outcomes, when the contract and policy allow.
+
+3. **All mutable action under contract** — **Every** mutation **must** be performed by a **bound execution identity** operating **under** an approved **task contract** (§2, §3). The supervisor does **not** perform implementation edits, deploys, sends, or other side effects **as a shortcut** in lieu of a named executor, except under an **execution bridge** (§1.1(5)).
+
+4. **Read / inspect for verification** — The supervisor **may** **read** or **non-mutating inspect** (including approved dry-runs) **solely** to **verify** that executor output or system state **matches** the contract and `success_criteria`, where the contract and policy allow. **Verification** does **not** authorize the supervisor to **do** the executor’s **implementation** work or to **create** the side effects under verification. If verification itself requires a one-off **mutating** check, treat it as **executor** work under the contract or as an **execution bridge** (§1.1(5)), not as “free” supervisor action.
+
+5. **Execution bridge (explicit exception only)** — When **no** suitable **executor** exists and **direct** action by a **supervisor-adjacent** or **orchestrator** runtime is **unavoidable**, the only conformant path is an **execution bridge**: a **written** task spec or **contract addendum** that records **(a)** **narrow** scope; **(b)** **explicit** **mutation** permission for the minimum necessary surface; **(c)** **rollback** and/or **containment**; **(d)** **verification** steps; **(e)** **immediate** **revocation** of **elevated** access, one-off **credentials**, or **standing** permissions **after** completion. The bridge is **rare** and **time-bounded**; it is not a default operating mode. Encode when possible in `execution_bridge` (§2.1).
+
+6. **Direct action without a bridge = violation** — **Direct** mutation of mutable reality by a supervisor in **normal** operation **without** a **bound** executor and **without** a documented **execution bridge** when a bridge is required is a **violation** under §8 (classify: **supervisor** **overreach** or **conflation of roles**). The same applies to **bypassing** a task contract to “just run” a privileged action from the **control** identity.
 
 ---
 
@@ -54,6 +69,9 @@ A **task contract** must include the following, using the names below or a docum
 - `supersedes` — Prior `task_id` this contract replaces (chain of authority).
 - `identity_selection` — Supervisor record: whether an **existing** allowed identity was used or a **new** one was created for this task, with **rationale** (why this identity fits the needed expertise and boundary).  
 - `boundary_monitoring` — **Anti-blur checkpoints**: when the supervisor or executor re-states scope, contract limits, and identity boundary during the run (especially long or multi-step work).
+- `supervisor_role` — Declares the operating posture of the main supervisor/orchestrator (e.g. `control_plane_only` — no executor duties in normal mode). Complements §1.1; use to drive UI or policy.  
+- `direct_execution_policy` — **Whether** the supervisor is **forbidden** from mutating reality directly (`forbidden` default), may do so **only** under a documented `execution_bridge` (`bridge_only`), or is **not** in scope (e.g. human-only org policy encoded elsewhere) (`not_applicable`).  
+- `execution_bridge` — When **unavoidable** direct action occurs without a **separate** executor, document the **scope**, **mutation permission**, **rollback/containment**, **verification**, and **post-step revocation** of elevated access; absence when required is a **governance** failure (see §1.1(5–6), §8).
 
 ---
 
@@ -143,8 +161,8 @@ If execution would exceed the declared surface, the executor must **stop** and r
 
 ## 8. Violation handling
 
-1. **Record** — Use `templates/violation-record.md` (or equivalent) for: what limit, what was observed, which identity, timeframe, and **remediation** (revoke, fix forward, new contract).
-2. **Severity** — Classify: attempted unauthorized access, success claimed without evidence, overreach, data exposure, etc.
+1. **Record** — Use `templates/violation-record.md` (or equivalent) for: what limit, what was observed, which identity, timeframe, and **remediation** (revoke, fix forward, new contract). Include **supervisor** **orchestrator** **direct** **mutation** without a **bound** **executor** or without a required **execution bridge** (§1.1).
+2. **Severity** — Classify: attempted unauthorized access, success claimed without evidence, overreach, data exposure, **supervisor conflation of control plane and executor**, **bypass of delegation**, etc.
 3. **No punishment theater** — Purpose is **audit and policy improvement**; repeated violations trigger **tighter** default contracts, not one-off arguments.
 4. **Disclosure** — If policy requires, violations feed security or compliance process as defined by the org (out of band to this spec).
 
@@ -169,6 +187,7 @@ A **conformant** implementation:
 - Enforces **allow lists** for paths, operations, and side channels.  
 - Produces or accepts **violation records** in the standard shape.  
 - Runs **verification** before marking success, and does **not** equate “executor said done” with **pass** without **independent** evidence per §7 (including **scope, diff, status, side effects, and commit metadata** where the contract requires them).  
-- Supports **supervisor verify-before-acceptance**: mechanisms or checklists that force review of executor output against the **task contract**, not trust-by-default.
+- Supports **supervisor verify-before-acceptance**: mechanisms or checklists that force review of executor output against the **task contract**, not trust-by-default.  
+- Does **not** use the **supervisor** identity as the **default** **path** for **mutable** work: **all** such work runs under **bound** **execution** **identities** and contracts; **execution bridge** (§1.1) is **exceptional** and **documented** when no executor is available.
 
 This standard does not mandate a specific programming language or storage format; JSON with `schemas/task-contract.schema.json` is one valid encoding.

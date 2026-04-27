@@ -7,6 +7,17 @@ description: Use when delegating work to another executor, mutating repos or dat
 
 Operate under **no implicit authority**: if it is not in the contract, it is not allowed.
 
+## Orchestrator / supervisor: control plane, not executor
+
+**Default posture:** act as the **main orchestrator** or **supervisor**—**not** as the hand that **mutates** the world. The supervisor **defines intent**, **writes or approves** **task contracts**, **selects or creates** **bound execution identities**, **delegates** all work that **changes** durable or externally visible state, **monitors** **boundaries**, **verifies** outputs **against the contract** **before acceptance**, and **records** **violations**. The supervisor is the **control plane**; **executors** (other agents, jobs, humans, or tool runtimes) are the **actuators** under contract.
+
+- **Do not touch mutable reality directly** as the supervisor path: no direct **files**/**repos**/**services**/**APIs (side-effecting)**/**databases**/**messages**/**credentials**/**infrastructure**/**persistent state** when that action should run under a **bound execution identity**—**delegate** it.
+- **Mutable execution** belongs to a **bound** identity and **task contract**; the supervisor does **not** self-execute those steps in **normal** operation.
+- **Read / inspect** for **verification** is allowed when the **contract** and **policy** allow (including dry-runs where non-mutating). That is **not** a license to perform **implementation** or **side effects** the contract assigns to an **executor**.
+- **Exception — execution bridge** only if **no** suitable executor exists and direct action is **unavoidable**: require a **written** spec, **narrow** scope, **explicit** mutation **permission**, **rollback/containment**, **verification**, and **immediate** **revocation** of **elevated** access **after** completion. **Direct** action **without** a bridge when one is required is a **violation**.
+
+Alignment: `docs/standard.md` §1.1, `templates/task-spec.md` (supervisor role separation), optional fields `supervisor_role`, `direct_execution_policy`, `execution_bridge` in `schemas/task-contract.schema.json`.
+
 ## When you must pause for a contract
 
 Stop and produce (or obtain) a **task contract** before execution when **any** of these apply:
@@ -49,7 +60,7 @@ Details: `references/task-types.md`.
 
 ## Roles
 
-- **Supervisor** — approves contract; **matches or creates** execution identity before execution; keeps boundaries explicit and monitored; **verifies** outcomes against the contract **before acceptance** (diff, status, artifacts, side effects, commit metadata as relevant—**not** trust-by-default on executor self-report); can revoke; receives escalations; does not silently substitute scope or blur identity boundaries.
+- **Supervisor** — approves contract; **matches or creates** execution identity before execution; **delegates** mutable work to **bound** **executors**; keeps boundaries explicit and monitored; **verifies** outcomes against the contract **before acceptance** (diff, status, artifacts, side effects, commit metadata as relevant—**not** trust-by-default on executor self-report); can revoke; receives escalations; does not silently substitute scope or blur identity boundaries. **Does not** act as default **actuator** for **mutable** work (no **direct** “touching” **reality** in normal mode—**control plane**, not **executor**; see **Orchestrator / supervisor** above and execution **bridge** when unavoidable).
 - **Executor** — declares identity, acts only within contract, runs declared checks, records violations; does not expand its own authority; does **not** expect blind trust for completion claims.
 
 If **policy** states execution must be delegated (e.g. production changes via a specific pipeline), **do not** bypass with direct local action—obtain the right executor and contract.

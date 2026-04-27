@@ -10,7 +10,7 @@ This document explains **how** organizations (or solo operators) can adopt the s
 |------|-----------------|
 | **Standard owner** | Maintains `docs/standard.md`, templates, and schema; bumps version on breaking changes. |
 | **Tool author** | Publishes a **capability manifest** for the tool (see below). |
-| **Supervisor** | Issues or approves **task contracts** that reference capabilities at **subset** of what the tool supports; **matches or creates** a **concrete execution identity** (expertise, boundary, resources) **before** execution and monitors boundaries through the run. **Does not** treat executor or tool **self-report** as sufficient proof of success—**verifies** against the contract (see §3 and README “Why this is the backbone”). |
+| **Supervisor** | Issues or approves **task contracts** that reference capabilities at **subset** of what the tool supports; **matches or creates** a **concrete execution identity** (expertise, boundary, resources) **before** execution; **delegates** all **mutable** work to that identity; monitors boundaries through the run. Operates as **control plane** by default: **does not** **directly** **mutate** **reality** (files, services, side-effecting APIs, data, messages, credentials, infrastructure, persistent state) in lieu of a **bound** **executor** except under a documented **execution bridge** when **unavoidable** (`docs/standard.md` §1.1). **Does not** treat executor or tool **self-report** as sufficient proof of success—**verifies** against the contract (see §3 and README “Why this is the backbone”). |
 | **Verifier** | Human or system that enforces `success_criteria` consistently with **independent** evidence (not trust-by-default on executor “done” claims). |
 | **Operator** | Ensures runtimes can enforce or **detect** contract violations and produce **violation records**. |
 
@@ -58,6 +58,8 @@ The manifest is **not** a contract by itself. It is the **ceiling** of what the 
 
 **Grant least privilege:** the default is **tight**; loosen only when a concrete step fails under verification (then **new** contract, not on-the-fly permission expansion).
 
+7. **Control plane vs actuator** — Supervisors and **orchestrators** **define** and **approve**; **executors** **change** the world under **contract**. If your platform conflates the two, **separate** **identities** and **forbid** **supervisor**-path **mutations** in policy, or require **`direct_execution_policy`** / **`execution_bridge`** fields (`docs/standard.md` §2.1) so ad hoc “I’ll just do it” is **visible** and **rare**. **Read-only** **verification** by the supervisor remains **in** **bounds** when the **contract** allows; **implementation** and **side effects** **must not** be **smuggled** in as “verification” without a **bridge**.
+
 ---
 
 ## 4. Runtime integration patterns
@@ -89,4 +91,4 @@ No single pattern fits all; pick based on what you can enforce honestly.
 
 ## 7. Summary
 
-**Tools** declare **capabilities**; **supervisors** issue **task contracts** that are strict subsets, then **verify-before-acceptance** so **success** is **evidence-backed**, not self-reported; **verifiers** enforce **success**; **violation records** make **failure and overreach** legible. That loop is the governance **backbone** for safer tool and agent ecosystems—without mandating a single product or cloud.
+**Tools** declare **capabilities**; **supervisors** issue **task contracts** that are strict subsets, **delegate** **mutable** work to **bound** **executors** (or **document** a rare **execution bridge**), and **verify-before-acceptance** so **success** is **evidence-backed**, not self-reported; **verifiers** enforce **success**; **violation records** make **failure**, **overreach**, and **supervisor** **direct**-**mutation** **without** a **bridge** **legible**. That loop is the governance **backbone** for safer tool and agent ecosystems—without mandating a single product or cloud.

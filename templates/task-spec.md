@@ -4,6 +4,30 @@
 
 ---
 
+## Supervisor role separation and execution bridge
+
+The **main supervisor** or **orchestrator** is the **control plane** (intent, contract, identity selection, delegation, boundary monitoring, verification, violation recording), **not** the default **actuator** for mutable work. All **mutations** run under a **bound execution identity** and this contract unless an **execution bridge** is active (see `docs/standard.md` §1.1).
+
+| Policy | Choice |
+|--------|--------|
+| **`direct_execution_policy`** | ☐ `forbidden` — supervisor must **not** mutate files, repos, services, APIs, DBs, messages, credentials, infra, or persistent state except **read/inspect for verification** as allowed below.  ☐ `bridge_only` — any unavoidable direct action only under completed **execution bridge** row.  ☐ `not_applicable` — (e.g. policy encoded outside this template) |
+
+| Execution bridge (only if direct supervisor/orchestrator action is unavoidable) | |
+|-------------------------------------------------------------------------------|---|
+| **Written task spec or contract addendum** attached / referenced | ☐ |
+| **Narrow scope** (minimum mutable surface) | ☐ |
+| **Explicit mutation permission** (what, where, until when) | ☐ |
+| **Rollback / containment** | ☐ |
+| **Verification** steps | ☐ |
+| **Immediate role / credential revocation** after completion | ☐ |
+| **Justification** (why no bound executor was available) | |
+
+**If `direct_execution_policy` is `forbidden` and no bridge is active:** any direct implementation or side effect by a supervisor process is a **violation** (file per `templates/violation-record.md`).
+
+**Read-only verification** — The supervisor may **read** or **non-mutating inspect** (e.g. diffs, logs, approved dry-runs) to **verify** outcomes, consistent with this contract. That does **not** authorize performing the **executor**’s implementation or side effects outside an **execution bridge** when a bridge is required.
+
+---
+
 ## Identifiers and accountability
 
 | Field | Value |

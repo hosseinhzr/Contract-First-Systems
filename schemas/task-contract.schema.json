@@ -91,6 +91,36 @@
       },
       "additionalProperties": true
     },
+    "supervisor_role": {
+      "type": "string",
+      "description": "Posture of the main supervisor/orchestrator: control plane (non-execution by default) vs mixed modes. See docs/standard.md §1.1.",
+      "enum": ["control_plane_only", "control_plane_delegates_execution", "not_specified"]
+    },
+    "direct_execution_policy": {
+      "type": "string",
+      "description": "Whether the supervisor may mutate reality directly, or only via a documented execution bridge. See docs/standard.md §1.1.",
+      "enum": ["forbidden", "bridge_only", "not_applicable"]
+    },
+    "execution_bridge": {
+      "type": "object",
+      "description": "When direct supervisor path mutates state because no bound executor is available: narrow written exception with verification and teardown. See docs/standard.md §1.1.",
+      "properties": {
+        "active": { "type": "boolean", "description": "Whether a one-off bridge is in effect for this task." },
+        "justification": {
+          "type": "string",
+          "description": "Why no suitable bound executor; unavoidable direct action only."
+        },
+        "scope": { "type": "string", "description": "Minimum mutable surface; time bounds if relevant." },
+        "mutation_permission": { "type": "string", "description": "Explicitly allowed mutations under the bridge." },
+        "rollback_or_containment": { "type": "string", "description": "How to undo, contain blast radius, or limit blast." },
+        "verification": { "type": "string", "description": "Steps to verify outcome before bridge is considered complete." },
+        "revocation": {
+          "type": "string",
+          "description": "Immediate post-completion revocation of elevated access, one-off creds, or role."
+        }
+      },
+      "additionalProperties": true
+    },
     "execution_identities": {
       "type": "array",
       "minItems": 1,
