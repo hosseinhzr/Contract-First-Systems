@@ -66,9 +66,9 @@ Undeclared channel ⇒ **denied**.
 | Field | Guidance |
 |-------|----------|
 | `success_criteria` | Objective checklist; include evidence types (diff stats, test output, message ids). |
-| `verification` | Automated commands, CI jobs, human sign-off; prefer verifier independence for high risk. |
+| `verification` | Automated commands, CI jobs, human sign-off; prefer verifier independence for high risk. The **supervisor** (or **verifier**) **independently** checks **evidence**—diff, job **status**, **side effects**, **commit** metadata as applicable; **executor self-report** is not sufficient for acceptance (see `docs/standard.md` §7, `templates/task-spec.md` “Supervisor acceptance”). |
 
-**No success claim** until criteria are met with evidence.
+**No success claim** until criteria are met with evidence. **“Done” from an executor** is a **claim** until **checked** against the contract; repeated drift warrants **tighter** contracts or checklists.
 
 ## Stop and escalate
 

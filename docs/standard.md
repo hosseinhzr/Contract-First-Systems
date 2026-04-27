@@ -3,7 +3,7 @@
 **Version:** 1.0  
 **Status:** implementable — fields and rules are intended to map directly to policy engines, tickets, and review workflows.
 
-This document defines **core principles**, **required contract fields**, **execution identity rules**, the **mutation model**, **blast radius**, **stop/escalation**, **verification**, **violation handling**, and **versioning**. Tools and supervisors **should** treat a task as non-compliant if required fields are missing or contradictory.
+This document defines **core principles**, **required contract fields**, **execution identity rules**, the **mutation model**, **blast radius**, **stop/escalation**, **verification**, **violation handling**, and **versioning**. Tools and supervisors **should** treat a task as non-compliant if required fields are missing or contradictory. The **supervisor** must **not** treat executor output as proof of success until it is **checked** against the contract (see §1 and §7).
 
 ---
 
@@ -17,6 +17,7 @@ This document defines **core principles**, **required contract fields**, **execu
 6. **Verifiable** — Success is defined so a **verifier** (human or automated) can say pass or fail with evidence.
 7. **Violations are first-class** — Breaches and near-misses are recorded in a **violation record**, not only chat logs.
 8. **Small blast radius** — Limits on scope, rate, and rollback are part of the contract, not an afterthought.
+9. **Verify-before-acceptance (supervisor)** — Executors are **capable but fallible**; their **outputs are claims** until independently checked against the **task contract** and `success_criteria`. The supervisor (or a designated, contract-backed **verifier**) must **not** accept work on **executor self-report alone**. **Acceptance** requires **evidence**: e.g. diffs, artifacts, command exit status, test/lint results, and—where applicable—**commit message**, **scope** (files and blast radius), **side effects**, and **metadata** (including absence of disallowed trailers or other forbidden markers). **Repeated executor drift** should trigger **tighter** contracts, checklists, or tooling—not repeated informal waivers.
 
 ---
 
@@ -132,9 +133,11 @@ If execution would exceed the declared surface, the executor must **stop** and r
 ## 7. Verification rules
 
 1. **Same bar every time** — The verifier applies the `success_criteria` and `verification` section, not ad hoc judgment in chat.
-2. **Evidence** — Automated checks (tests, lint, policy scans) are preferred; human sign-off is explicit in `verification` when required.
-3. **Failure** — If verification fails, the state is **not** “done”; rollback or new contract is required.
-4. **Independence** — Where risk is high, the verifier should not be the same unreviewed process that executed (e.g. separate CI job, second human).
+2. **Self-report is insufficient** — An executor’s claim of “done,” “passing,” or “complete” is **not** a substitute for running the **declared** checks and **inspecting** relevant **evidence** (outputs, diffs, logs, job status) against the contract. **Success means evidence that matches the contract**, not a narrative from the same execution path.
+3. **What to check (as applicable)** — At minimum, align **scope** (paths, operations, blast radius) with the contract; review **diffs and artifacts**; confirm **automation/CI status** where specified; **enumerate side effects** (channels, recipients, idempotency) against `side_effect_channels` and limits; review **commit and message metadata** (subject, body, required or forbidden lines) for repo tasks. Omissions here are **non-conformant** if the contract required them.
+4. **Evidence** — Automated checks (tests, lint, policy scans) are preferred; human sign-off is explicit in `verification` when required.
+5. **Failure** — If verification fails, the state is **not** “done”; rollback or new contract is required.
+6. **Independence** — Where risk is high, the verifier should not be the same unreviewed process that executed (e.g. separate CI job, second human).
 
 ---
 
@@ -165,6 +168,7 @@ A **conformant** implementation:
 - Binds **execution identity** to **allowed list** in the contract.  
 - Enforces **allow lists** for paths, operations, and side channels.  
 - Produces or accepts **violation records** in the standard shape.  
-- Runs **verification** before marking success.
+- Runs **verification** before marking success, and does **not** equate “executor said done” with **pass** without **independent** evidence per §7 (including **scope, diff, status, side effects, and commit metadata** where the contract requires them).  
+- Supports **supervisor verify-before-acceptance**: mechanisms or checklists that force review of executor output against the **task contract**, not trust-by-default.
 
 This standard does not mandate a specific programming language or storage format; JSON with `schemas/task-contract.schema.json` is one valid encoding.

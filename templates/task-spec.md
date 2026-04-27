@@ -101,6 +101,21 @@ Checklist; must be objectively verifiable.
 | Human review | Required? Who? |
 | Evidence to retain | e.g. diff, log, message id |
 
+### Supervisor acceptance (verify before close)
+
+**Do not** close the task on **executor self-report alone**. Executors are capable but fallible; treat their summary as **claims** until checked. **Acceptance** means **evidence** matches the contract and `success_criteria` below—not a verbal or chat “done.”
+
+**Supervisor checks (tick when satisfied; note evidence or N/A):**
+
+- [ ] **Scope** — Changed paths/operations match `allowed_paths`, `exclusions`, `allowed_operations`, and `blast_radius`; no **undeclared** work.
+- [ ] **Diff / artifacts** — Reviewed (or policy-reviewed) for unintended edits; **artifacts** (builds, exports, etc.) match what verification requires.
+- [ ] **Status** — Any required commands, jobs, or tests **executed and passed**; failures not waived without a new contract.
+- [ ] **Side effects** — Only **declared** `side_effect_channels` used; **limits** and idempotency respected; no silent extra sends/calls.
+- [ ] **Commit & metadata** — If the task includes VCS/PR work: **message**, **body**, **scope of commit(s)**, and **forbidden** lines/trailers (per org policy) are **explicitly** OK.
+- [ ] **Contract cross-check** — `success_criteria` items **proven** with the evidence type named in this section—not assumed from executor narrative.
+
+**If the same class of miss recurs,** **tighten** the next contract, checklist, or automation—do not normalize informal acceptance.
+
 ## Stop conditions
 
 When the executor must **halt** (no “success” claim):

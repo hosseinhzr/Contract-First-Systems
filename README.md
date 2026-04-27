@@ -50,7 +50,7 @@ Together, these separate **what is requested** (intent in the contract) from **h
 
 ## Why this is the backbone for future tools and agents
 
-Multi-tool and multi-agent systems fail when every component negotiates ad hoc permissions in natural language. A **contract layer**:
+Multi-tool and multi-agent systems fail when every component negotiates ad hoc permissions in natural language. They also fail when a **supervisor** treats **executor output** as **proof** without **independent** checking—executors are **capable but fallible**; their summaries are **claims** until **verified** against the **task contract** (evidence: **diff, scope, status, artifacts, side effects, commit metadata** as applicable). **Verify-before-acceptance** is **governance**, not suspicion: the same **success bar** every time, whether the worker is human or automated. A **contract layer**:
 
 - **Standardizes** how tools **request** capability (pre-declared scopes, not “trust me”).
 - **Standardizes** how supervisors **grant** authority in **revocable, auditable** units.

@@ -44,13 +44,13 @@ Details: `references/task-types.md`.
 6. **Scope guards** — set `allowed_paths`, `exclusions`, `side_effect_limits`, `blast_radius`, `stop_conditions`, `escalation`, `verification`, and `success_criteria`. Prefer narrowest prefixes; exclusions win over broad allows.
 7. **Boundary checkpoints** — During execution, re-state the active identity, its boundary, and contract limits at planned checkpoints (and before irreversible or external side effects). If expertise or boundary no longer matches the work, **stop** and obtain a matching identity or new contract.
 8. **Execute** only inside the contract. If you hit ambiguity, missing access, or a limit: **stop**, do not finish with unrelated edits.
-9. **Verify** against `success_criteria` and the `verification` plan **before** claiming success. Failed verification ⇒ not done; rollback or new contract.
+9. **Verify** against `success_criteria` and the `verification` plan **before** claiming success. Failed verification ⇒ not done; rollback or new contract. **As supervisor or delegate:** **never** accept another executor’s “done” on **self-report alone**—**you** (or a designated **verifier** process) must **independently** check **evidence** (diff, artifacts, test/CI **status**, **side effects**, **commit** message/metadata as applicable) against the **task contract**. Executor claims are **useful** but **untrusted** until **checked**; **success = evidence that matches the contract**, not a narrative. **Repeated** drift ⇒ **harden** the contract, tooling, or checklists in `templates/task-spec.md`.
 10. **Violations** — if a boundary was crossed or false completion risk exists, file a structured record per `references/violation-records.md`.
 
 ## Roles
 
-- **Supervisor** — approves contract; **matches or creates** execution identity before execution; keeps boundaries explicit and monitored; can revoke; receives escalations; does not silently substitute scope or blur identity boundaries.
-- **Executor** — declares identity, acts only within contract, verifies, records violations; does not expand its own authority.
+- **Supervisor** — approves contract; **matches or creates** execution identity before execution; keeps boundaries explicit and monitored; **verifies** outcomes against the contract **before acceptance** (diff, status, artifacts, side effects, commit metadata as relevant—**not** trust-by-default on executor self-report); can revoke; receives escalations; does not silently substitute scope or blur identity boundaries.
+- **Executor** — declares identity, acts only within contract, runs declared checks, records violations; does not expand its own authority; does **not** expect blind trust for completion claims.
 
 If **policy** states execution must be delegated (e.g. production changes via a specific pipeline), **do not** bypass with direct local action—obtain the right executor and contract.
 

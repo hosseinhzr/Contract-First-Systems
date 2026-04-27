@@ -10,8 +10,8 @@ This document explains **how** organizations (or solo operators) can adopt the s
 |------|-----------------|
 | **Standard owner** | Maintains `docs/standard.md`, templates, and schema; bumps version on breaking changes. |
 | **Tool author** | Publishes a **capability manifest** for the tool (see below). |
-| **Supervisor** | Issues or approves **task contracts** that reference capabilities at **subset** of what the tool supports; **matches or creates** a **concrete execution identity** (expertise, boundary, resources) **before** execution and monitors boundaries through the run. |
-| **Verifier** | Human or system that enforces `success_criteria` consistently. |
+| **Supervisor** | Issues or approves **task contracts** that reference capabilities at **subset** of what the tool supports; **matches or creates** a **concrete execution identity** (expertise, boundary, resources) **before** execution and monitors boundaries through the run. **Does not** treat executor or tool **self-report** as sufficient proof of success—**verifies** against the contract (see §3 and README “Why this is the backbone”). |
+| **Verifier** | Human or system that enforces `success_criteria` consistently with **independent** evidence (not trust-by-default on executor “done” claims). |
 | **Operator** | Ensures runtimes can enforce or **detect** contract violations and produce **violation records**. |
 
 Adoption is incremental: you can start with **human-supervised** contracts in tickets before any automation enforces them.
@@ -53,7 +53,7 @@ The manifest is **not** a contract by itself. It is the **ceiling** of what the 
 2. **Subset the manifest** — The contract’s `allowed_operations`, `allowed_paths`, and `side_effect_channels` are **intersections** with the org’s need, not the tool’s full power.  
 3. **Name identities** — List allowed `execution_id` patterns or service accounts, not “any user.” For each task, **record identity selection**: use an **existing** profile that fits the needed **expertise/domain** and **boundary**, or **create** a new named identity before execution; document **why** (`identity_selection` in schema / task template).  
 4. **Checkpoint boundaries** — For longer or multi-step work, require **anti-blur checkpoints** so scope and tool permissions do not drift; if expertise no longer matches, **stop** and re-issue contract or identity—do not expand ad hoc.  
-5. **Tie verification to evidence** — Define what "green" means before execution starts.  
+5. **Tie verification to evidence** — Define what "green" means before execution starts. **Acceptance** requires **evidence** aligned with that definition—**not** the executor’s summary alone. Supervisors (or **verifiers**) **check** diffs, **automation/CI status**, **side effects** against the contract, and **commit/message metadata** when repo or release work is in scope. **Executor claims require verification**; repeated misses **harden** contracts, checklists, or hooks.  
 6. **Version and supersede** — If scope must grow, issue a new `task_id` with `supersedes` to preserve audit chain.
 
 **Grant least privilege:** the default is **tight**; loosen only when a concrete step fails under verification (then **new** contract, not on-the-fly permission expansion).
@@ -89,4 +89,4 @@ No single pattern fits all; pick based on what you can enforce honestly.
 
 ## 7. Summary
 
-**Tools** declare **capabilities**; **supervisors** issue **task contracts** that are strict subsets; **verifiers** enforce **success**; **violation records** make **failure and overreach** legible. That loop is the governance **backbone** for safer tool and agent ecosystems—without mandating a single product or cloud.
+**Tools** declare **capabilities**; **supervisors** issue **task contracts** that are strict subsets, then **verify-before-acceptance** so **success** is **evidence-backed**, not self-reported; **verifiers** enforce **success**; **violation records** make **failure and overreach** legible. That loop is the governance **backbone** for safer tool and agent ecosystems—without mandating a single product or cloud.
